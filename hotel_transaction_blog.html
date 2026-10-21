@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Room, Two Customers, One Correct Booking</title>
+<style>
+:root{
+  --ink:#172033;
+  --muted:#667085;
+  --paper:#f6f3ec;
+  --card:#fffdf8;
+  --navy:#18263d;
+  --navy2:#243653;
+  --amber:#d79a35;
+  --amber-soft:#f4e5c5;
+  --green:#287a5a;
+  --green-soft:#e0f1e8;
+  --red:#b94b4b;
+  --red-soft:#f7e1df;
+  --line:#ded8ca;
+  --shadow:0 18px 50px rgba(23,32,51,.09);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  line-height:1.65;
+}
+a{color:inherit;text-decoration:none}
+.container{width:min(1120px,92%);margin:auto}
+.topbar{
+  position:sticky;top:0;z-index:20;
+  background:rgba(246,243,236,.92);backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(222,216,202,.9);
+}
+.nav{height:68px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.brand{font-weight:800;letter-spacing:.05em;font-size:.82rem}
+.brand span{color:var(--amber)}
+.navlinks{display:flex;gap:22px;font-size:.78rem;color:var(--muted)}
+.navlinks a:hover{color:var(--ink)}
+.hero{padding:86px 0 70px;position:relative;overflow:hidden}
+.hero:before{
+  content:"";position:absolute;width:430px;height:430px;border-radius:50%;
+  background:var(--amber-soft);right:-130px;top:10px;opacity:.7;
+}
+.kicker{
+  display:inline-flex;align-items:center;gap:9px;
+  font-size:.75rem;font-weight:800;letter-spacing:.14em;color:var(--amber);
+  text-transform:uppercase;
+}
+.kicker:before{content:"";width:28px;height:2px;background:var(--amber)}
+h1{font-size:clamp(3rem,7vw,6.7rem);line-height:.94;letter-spacing:-.065em;margin:18px 0 25px;max-width:900px}
+.hero p{font-size:1.15rem;color:var(--muted);max-width:730px}
+.meta{display:flex;flex-wrap:wrap;gap:9px;margin-top:28px}
+.pill{border:1px solid var(--line);background:rgba(255,253,248,.7);padding:8px 13px;border-radius:999px;font-size:.76rem}
+.hero-grid{display:grid;grid-template-columns:1fr 330px;gap:30px;align-items:end;margin-top:40px}
+.room-card{
+  background:var(--navy);color:white;border-radius:24px;padding:24px;
+  box-shadow:var(--shadow);position:relative;overflow:hidden;
+}
+.room-card:after{content:"205";position:absolute;font-size:9rem;font-weight:900;right:-10px;bottom:-42px;color:rgba(255,255,255,.055)}
+.room-top{display:flex;justify-content:space-between;position:relative;z-index:1}
+.status{font-size:.72rem;background:#294f42;color:#bce9d2;padding:6px 10px;border-radius:99px}
+.room-number{font-size:3rem;font-weight:800;line-height:1}
+.room-info{position:relative;z-index:1;margin-top:50px;font-size:.82rem;color:#c8d0dc}
+section{padding:76px 0}
+.section-head{display:grid;grid-template-columns:160px 1fr;gap:30px;margin-bottom:35px}
+.eyebrow{font-size:.72rem;font-weight:900;letter-spacing:.13em;color:var(--amber);text-transform:uppercase}
+h2{font-size:clamp(2rem,4vw,3.7rem);line-height:1.05;letter-spacing:-.045em;margin:0}
+.lead{color:var(--muted);max-width:760px;font-size:1.02rem}
+.story{
+  display:grid;grid-template-columns:1.15fr .85fr;gap:24px;align-items:stretch
+}
+.story-copy,.quote-card,.panel,.simulator,.takeaway{
+  background:var(--card);border:1px solid var(--line);border-radius:24px;
+  box-shadow:0 10px 30px rgba(23,32,51,.04)
+}
+.story-copy{padding:32px}
+.quote-card{padding:32px;background:var(--navy);color:white;display:flex;flex-direction:column;justify-content:space-between}
+.quote{font-size:1.55rem;line-height:1.25;letter-spacing:-.025em}
+.quote small{color:#bfc9d7}
+.booking-duel{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:25px}
+.person{padding:18px;border:1px solid var(--line);border-radius:16px;background:#fbfaf5}
+.person strong{display:block;font-size:1.1rem}
+.person small{color:var(--muted)}
+.arrow{color:var(--amber);font-weight:900}
+.flow{
+  display:flex;align-items:stretch;gap:0;flex-wrap:wrap
+}
+.flow-item{flex:1;min-width:150px;background:var(--card);border:1px solid var(--line);padding:20px;position:relative}
+.flow-item:first-child{border-radius:18px 0 0 18px}
+.flow-item:last-child{border-radius:0 18px 18px 0}
+.flow-item:not(:last-child):after{content:"→";position:absolute;right:-10px;top:50%;transform:translateY(-50%);background:var(--amber);color:white;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:.7rem;z-index:2}
+.flow-num{font-size:.7rem;color:var(--amber);font-weight:900}
+.flow-item strong{display:block;margin-top:6px}
+.code-box{background:#111a29;color:#dce4ee;border-radius:20px;padding:24px;overflow:auto;font-family:"SFMono-Regular",Consolas,monospace;font-size:.85rem;line-height:1.75}
+.code-box .accent{color:#e7b75d}
+.code-box .comment{color:#7890a9}
+.schedule{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.schedule-card{padding:24px;border-radius:20px;border:1px solid var(--line);background:var(--card)}
+.schedule-card.bad{border-top:4px solid var(--red)}
+.schedule-card.good{border-top:4px solid var(--green)}
+.schedule-card h3{margin:0 0 16px}
+.steps{display:grid;gap:8px}
+.step{padding:12px 14px;background:#f8f6ef;border-radius:10px;font-family:monospace;font-size:.82rem}
+.bad .step:nth-child(4),.bad .step:nth-child(5){background:var(--red-soft);color:#8e3030}
+.good .step:nth-child(3){background:var(--green-soft);color:#216448}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+th,td{text-align:left;padding:16px 18px;border-bottom:1px solid var(--line)}
+th{background:#eee9de;font-size:.76rem;text-transform:uppercase;letter-spacing:.08em}
+tr:last-child td{border-bottom:0}
+.acid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.acid-card{padding:22px;border:1px solid var(--line);border-radius:18px;background:var(--card)}
+.letter{font-size:2.4rem;font-weight:900;color:var(--amber);line-height:1}
+.acid-card strong{display:block;margin:8px 0 4px}
+.acid-card p{margin:0;color:var(--muted);font-size:.88rem}
+.focus{
+  background:var(--navy);color:white;border-radius:28px;padding:34px;
+  box-shadow:var(--shadow)
+}
+.focus .section-head{margin-bottom:25px}
+.focus .lead{color:#c6cfda}
+.lock-flow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.lock-card{background:#22324d;border:1px solid #33445f;border-radius:18px;padding:20px}
+.lock-card h3{margin-top:0}
+.lock-card .mini{padding:10px 12px;margin:7px 0;border-radius:9px;background:#2c405f;font-family:monospace;font-size:.78rem}
+.lock-card .wait{background:#5a4730;color:#f8d99b}
+.tables{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.table-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;overflow:auto}
+.table-title{font-weight:800;margin-bottom:12px}
+.mini-table{width:100%;font-size:.84rem}
+.mini-table th,.mini-table td{padding:10px 8px}
+.simulator{padding:28px}
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+button{
+  border:0;border-radius:999px;padding:11px 16px;font-weight:800;cursor:pointer;
+  font-family:inherit
+}
+.primary{background:var(--navy);color:white}
+.secondary{background:#eee9de;color:var(--ink)}
+.timeline{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px}
+.timeline-card{border:1px solid var(--line);border-radius:16px;padding:18px;background:#fbfaf5}
+.timeline-card h3{margin-top:0}
+.event{padding:9px 11px;margin:7px 0;border-radius:8px;background:white;border-left:3px solid var(--line);font-family:monospace;font-size:.78rem}
+.event.success{border-color:var(--green);background:var(--green-soft)}
+.event.fail{border-color:var(--red);background:var(--red-soft)}
+.event.warn{border-color:var(--amber);background:var(--amber-soft)}
+.state{margin-top:18px;padding:17px;border-radius:14px;background:var(--navy);color:white}
+.state span{font-weight:900;color:#e9bd69}
+.callout{margin-top:20px;padding:18px 20px;border-left:4px solid var(--amber);background:var(--amber-soft);border-radius:0 14px 14px 0}
+.takeaway{padding:40px;background:var(--navy);color:white}
+.takeaway h2{max-width:700px}
+.takeaway p{color:#c8d0dc;max-width:780px}
+.final-line{font-family:monospace;font-size:1rem;letter-spacing:.06em;color:#e9bd69;margin-top:25px}
+footer{padding:35px 0 60px;color:var(--muted);font-size:.8rem}
+.topic-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px;font-size:.74rem;font-weight:800;letter-spacing:.05em}
+.topic-bar span{padding:6px 13px;border-radius:99px;border:1px solid var(--line);background:var(--card)}
+.topic-bar .who{color:#fff;border:0}
+.who.m1{background:var(--amber)}.who.m2{background:var(--green)}.who.m3{background:var(--navy2)}
+.acid.two,.note-grid{display:grid;gap:14px;margin-top:22px}
+.acid.two{grid-template-columns:repeat(2,1fr)}
+.note-grid{grid-template-columns:repeat(3,1fr)}
+.calc{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+.calc label small{color:var(--muted);display:block}
+input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff}
+@media(max-width:800px){.note-grid,.calc{grid-template-columns:1fr 1fr}}
+@media(max-width:500px){.acid.two,.note-grid,.calc{grid-template-columns:1fr}}
+@media(max-width:800px){
+  .navlinks{display:none}
+  .hero-grid,.story,.schedule,.lock-flow,.tables,.timeline{grid-template-columns:1fr}
+  .section-head{grid-template-columns:1fr;gap:10px}
+  .acid{grid-template-columns:1fr 1fr}
+  .flow-item{min-width:100%;border-radius:0!important}
+  .flow-item:not(:last-child):after{content:"↓";right:50%;top:auto;bottom:-10px;transform:translateX(50%)}
+  h1{font-size:clamp(3rem,15vw,5rem)}
+}
+@media(max-width:500px){.acid{grid-template-columns:1fr}.booking-duel{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container nav">
+    <a class="brand" href="#">DBMS <span>/</span> CASE STUDY</a><nav class="navlinks"><a href="#problem">Problem</a><a href="#transactions">Transactions</a><a href="#schedules">Schedules</a><a href="#locking">Locking</a><a href="#sql">SQL</a><a href="#takeaway">Takeaway</a></nav>  </div>
+</header>
+
+<main>
+<section class="hero">
+  <div class="container">
+    <div class="kicker">DBMS • Transaction Management • Hotel Reservation</div>
+    <h1>One room.<br>Two customers.<br><span style="color:var(--amber)">One correct booking.</span></h1>
+    <p>How transaction management prevents double booking in an online hotel reservation system.</p>
+    <div class="meta">
+      <span class="pill">Concurrency Control</span>
+      <span class="pill">Serializability</span>
+      <span class="pill">ACID Properties</span>
+      <span class="pill">Row Locking</span>
+    </div>
+
+    <div class="hero-grid">
+      <div>
+        <p><strong>9:00 PM. Friday.</strong> Aarav and Meera are looking at the same Room 205 for 10–12 October. Both see it as available for those dates. Both click “Confirm Booking” almost together.</p>
+        <p style="color:var(--muted)">The screen looks simple. The database problem underneath it is not.</p>
+      </div>
+      <div class="room-card">
+        <div class="room-top">
+          <div><div style="font-size:.7rem;color:#aab5c4">ROOM</div><div class="room-number">205</div></div>
+          <div class="status">AVAILABLE</div>
+        </div>
+        <div class="room-info">Available for 10–12 OCT<br>Weekend reservation<br>Two requests • one room</div>
+      </div>
+    </div>
+  </div>
+</section>
+<section id="problem">
+<div class="container">  <div class="section-head">
+    <div class="eyebrow">01 — The problem</div>
+    <div>
+      <h2>A simple booking can become a database problem.</h2>
+      <p class="lead">A hotel website serves many users at once. Trouble begins when two transactions check the same room and dates before either one has written its booking.</p>
+    </div>
+  </div>
+  <div class="story">
+    <div class="story-copy">
+      <p>At the same moment, Aarav and Meera open the hotel website and see Room 205 as available for the same dates.</p>
+      <div class="booking-duel">
+        <div class="person"><strong>Aarav</strong><small>Checks 10–12 Oct → free</small><div class="arrow">↓</div><small>Creates booking</small></div>
+        <div class="person"><strong>Meera</strong><small>Checks 10–12 Oct → free</small><div class="arrow">↓</div><small>Creates booking</small></div>
+      </div>
+      <div class="callout"><strong>The conflict:</strong> both transactions operate on the same room and overlapping dates, and both write.</div>
+      <div class="callout"><strong>Availability depends on dates.</strong> A room is not simply “available” or “booked” forever. Room 205 can hold several reservations as long as their date ranges do not overlap. An existing reservation conflicts with a new request when <code>existing.check_in &lt; new.check_out</code> AND <code>existing.check_out &gt; new.check_in</code>. For example, an existing 5–8 Oct booking does not conflict with 10–12 Oct.</div><div class="callout"><strong>Objective of this blog:</strong> to show how transaction management, concurrency control and row locking stop Room 205 from being sold twice.</div><div class="callout"><strong>Why double booking hurts:</strong> two guests hold confirmations for one room, so one is turned away, the hotel pays in compensation and lost trust, and the Booking table holds an invalid state.</div>    </div>
+    <div class="quote-card">
+      <div>
+        <div style="font-size:.7rem;letter-spacing:.12em;color:#e9bd69;font-weight:900">THE REAL-WORLD FAILURE</div>
+        <p class="quote">“Both receive a confirmation email. Both arrive at the hotel. There is one room.”</p>
+      </div>
+      <small>This is a concurrency problem — not simply a normal application bug.</small>
+    </div>
+  </div>
+</div>
+</section>
+<section id="transactions">
+<div class="container">  <div class="section-head">
+    <div class="eyebrow">02 — Transaction</div>
+    <div>
+      <h2>Think of a booking as one complete unit of work.</h2>
+      <p class="lead">A transaction groups checking availability for the requested dates, creating the reservation and any related updates into an all-or-nothing operation.</p>
+    </div>
+  </div>
+
+  <div class="flow">
+    <div class="flow-item"><span class="flow-num">01</span><strong>BEGIN</strong><small>Start transaction</small></div>
+    <div class="flow-item"><span class="flow-num">02</span><strong>CHECK</strong><small>Availability for dates</small></div>
+    <div class="flow-item"><span class="flow-num">03</span><strong>RESERVE</strong><small>Create booking</small></div>
+    <div class="flow-item"><span class="flow-num">04</span><strong>UPDATE</strong><small>Related data (if any)</small></div>
+    <div class="flow-item"><span class="flow-num">05</span><strong>COMMIT</strong><small>Make permanent</small></div>
+  </div>
+
+  <div class="code-box" style="margin-top:22px">
+    <span class="accent">BEGIN TRANSACTION</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+    Check Availability → Create Reservation → Update Related Data<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+    <span class="accent">COMMIT</span><br><br>
+    <span class="comment">If something fails:</span><br>
+    ERROR → <span class="accent">ROLLBACK</span>
+  </div>
+  <p class="lead" style="margin-top:18px">COMMIT makes the changes permanent. ROLLBACK undoes changes made by the transaction if something goes wrong.</p><div class="note-grid"><div class="acid-card"><strong>BEGIN</strong><p>Opens the unit of work. Nothing is permanent yet.</p></div><div class="acid-card"><strong>CHECK → RESERVE</strong><p>Look for overlapping dates on Room 205; only if none exist, insert the booking.</p></div><div class="acid-card"><strong>COMMIT or ROLLBACK</strong><p>COMMIT saves every step together; ROLLBACK undoes them all.</p></div></div><p class="lead" style="margin-top:22px"><strong>ACID, part 1.</strong> ACID is the reliability checklist for transactions. Two letters explain the all-or-nothing booking; Isolation and Durability come later.</p><div class="acid two">    <div class="acid-card"><div class="letter">A</div><strong>Atomicity</strong><p>Booking completes fully or rolls back.</p></div>
+    <div class="acid-card"><div class="letter">C</div><strong>Consistency</strong><p>A committed transaction moves the database from one valid state to another, e.g. no overlapping reservations for a room.</p></div></div></div>
+</section>
+<section id="t3"><div class="container"><div class="section-head"><div class="eyebrow">03 — Overlap check</div><div><h2>Do these two bookings overlap?</h2><p class="lead">Apply the date-overlap condition to real requests, one comparison at a time.</p></div></div><div class="code-box"><span class="comment">-- an existing reservation conflicts with a new request when BOTH are true:</span><br>existing.check_in &lt; new.check_out<br><span class="accent">AND</span> existing.check_out &gt; new.check_in</div><h3 style="margin:28px 0 12px">Worked case A: Aarav (existing) vs Meera (new)</h3><div class="steps"><div class="step">1. Existing: Aarav, Room 205, 10–12 Oct. New request: Meera, Room 205, 10–12 Oct.</div><div class="step">2. Test 1: existing.check_in (10) &lt; new.check_out (12) → TRUE</div><div class="step">3. Test 2: existing.check_out (12) &gt; new.check_in (10) → TRUE</div><div class="step">4. Both true → overlap → Meera’s request must be rejected.</div></div><table style="margin-top:24px"><thead><tr><th>Case</th><th>Existing</th><th>New request</th><th>Test 1</th><th>Test 2</th><th>Result</th></tr></thead><tbody><tr><td>A</td><td>Aarav 10–12</td><td>Meera 10–12</td><td>10 &lt; 12 → true</td><td>12 &gt; 10 → true</td><td>Overlap: reject</td></tr><tr><td>B</td><td>Rahul 5–8</td><td>Meera 10–12</td><td>5 &lt; 12 → true</td><td>8 &gt; 10 → false</td><td>No overlap: accept</td></tr><tr><td>C</td><td>Rahul 5–8</td><td>New guest 8–10</td><td>5 &lt; 10 → true</td><td>8 &gt; 8 → false</td><td>No overlap: the room is vacated on the 8th</td></tr><tr><td>D</td><td>Aarav 10–12</td><td>New guest 11–14</td><td>10 &lt; 14 → true</td><td>12 &gt; 11 → true</td><td>Partial overlap: reject</td></tr></tbody></table><div class="simulator" style="margin-top:24px"><strong>Try it yourself</strong> <span style="color:var(--muted);font-size:.85rem">(day of October)</span><div class="calc"><label><small>Existing check-in</small><input id="c-ei" type="number" min="1" max="31" value="10"></label><label><small>Existing check-out</small><input id="c-eo" type="number" min="1" max="31" value="12"></label><label><small>New check-in</small><input id="c-ni" type="number" min="1" max="31" value="11"></label><label><small>New check-out</small><input id="c-no" type="number" min="1" max="31" value="13"></label></div><div class="controls"><button class="primary" onclick="checkOverlap()">Check overlap</button><button class="secondary" onclick="loadCase(10,12,10,12)">Case A</button><button class="secondary" onclick="loadCase(5,8,10,12)">Case B</button><button class="secondary" onclick="loadCase(5,8,8,10)">Case C</button><button class="secondary" onclick="loadCase(10,12,11,14)">Case D</button></div><div id="c-out"><div class="event">Press “Check overlap”…</div></div></div></div></section>
+<section id="schedules">
+<div class="container">  <div class="section-head">
+    <div class="eyebrow">04 — Schedules</div>
+    <div>
+      <h2>Serial is safe. Concurrent is faster — but needs control.</h2>
+      <p class="lead">A schedule describes the order in which operations from multiple transactions execute.</p>
+    </div>
+  </div>
+
+  <div class="schedule">
+    <div class="schedule-card good">
+      <h3>✓ Serial schedule</h3>
+      <p>One transaction finishes before the next begins.</p>
+      <div class="steps">
+        <div class="step">T1 → Check dates → Reserve → Commit</div>
+        <div class="step">T2 → Check dates</div>
+        <div class="step">T2 → Overlap found → Reject</div>
+      </div>
+    </div>
+    <div class="schedule-card bad">
+      <h3>⚠ Concurrent schedule (no control)</h3>
+      <p>Operations are interleaved: both transactions read before either one writes.</p>
+      <div class="steps">
+        <div class="step">T1 → Check dates → no overlap</div>
+        <div class="step">T2 → Check dates → no overlap</div>
+        <div class="step">T1 → INSERT booking</div>
+        <div class="step">T2 → INSERT booking</div>
+        <div class="step">T1, T2 → COMMIT → overlapping bookings</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:24px">
+    <table>
+      <thead><tr><th>Feature</th><th>Serial</th><th>Concurrent</th></tr></thead>
+      <tbody>
+        <tr><td>Execution</td><td>One after another</td><td>Simultaneous / interleaved</td></tr>
+        <tr><td>Performance</td><td>Lower</td><td>Higher</td></tr>
+        <tr><td>Conflict risk</td><td>Low</td><td>High without control</td></tr>
+      </tbody>
+    </table>
+  </div><h3 style="margin:30px 0 0">Same two requests, different order, different result</h3><table style="margin-top:14px"><thead><tr><th>Order of operations</th><th>Aarav</th><th>Meera</th><th>Database state</th></tr></thead><tbody><tr><td>Serial: T1 then T2</td><td>Booked</td><td>Rejected</td><td>Valid</td></tr><tr><td>Serial: T2 then T1</td><td>Rejected</td><td>Booked</td><td>Valid</td></tr><tr><td>Concurrent, no control</td><td>Accepted</td><td>Accepted</td><td>Overlapping bookings (invalid)</td></tr></tbody></table><p class="lead" style="margin-top:16px">Both serial orders are correct; only the winner differs. The concurrent schedule fails because both CHECK steps run before either INSERT, so each transaction decides using out-of-date information.</p></div>
+</section>
+<section id="isolation"><div class="container"><div class="section-head"><div class="eyebrow">05 — Serializability</div><div><h2>Same result as some serial order, without interference.</h2><p class="lead">Atomicity and Consistency were covered earlier. Here: why a concurrent schedule can still be correct, and the two remaining ACID properties.</p></div></div>  <p class="lead" style="margin-top:20px"><strong>Serializability</strong> is the key idea: a concurrent schedule is acceptable if its result is the same as some serial order of the same transactions (T1 then T2, or T2 then T1). In either order, only one of the two overlapping bookings can succeed. Concurrency control (such as locking) is what forces the DBMS to allow only such schedules.</p><table style="margin-top:18px"><thead><tr><th>Schedule</th><th>Equivalent to a serial order?</th><th>Verdict</th></tr></thead><tbody><tr><td>Unsafe interleaving</td><td>No: matches neither T1 → T2 nor T2 → T1</td><td>Not serializable</td></tr><tr><td>Locked schedule</td><td>Yes: same result as T1 then T2</td><td>Serializable</td></tr></tbody></table><div class="acid two">    <div class="acid-card"><div class="letter">I</div><strong>Isolation</strong><p>Concurrent transactions behave as if they did not interfere; the strength depends on the isolation level.</p></div>
+    <div class="acid-card"><div class="letter">D</div><strong>Durability</strong><p>Committed bookings remain stored, even after a crash.</p></div></div><div class="callout"><strong>Isolation and double booking:</strong> Isolation is what failed in the unsafe schedule: T2 decided as if T1 did not exist. <strong>Durability</strong> then protects the winner: once COMMIT returns, Aarav’s booking survives a crash.</div>  <div class="callout"><strong>Simple connection:</strong> Isolation and concurrency control help protect Consistency, but they do not guarantee it alone. Consistency also depends on correct transaction logic and on rules such as constraints.</div></div></section>
+<section id="t6"><div class="container"><div class="section-head"><div class="eyebrow">06 — The unsafe schedule</div><div><h2>The unsafe schedule, on purpose.</h2><p class="lead">This run has no concurrency control. It shows the failure; it is not how bookings should be written.</p></div></div><div class="callout" style="border-color:var(--red);background:var(--red-soft)"><strong>Deliberately unsafe.</strong> Nothing in this section is the correct booking procedure. The safe version follows in the SQL section.</div><table style="margin-top:18px"><thead><tr><th>Step</th><th>Transaction</th><th>Action</th><th>What happens</th></tr></thead><tbody><tr><td>1</td><td>T1 Aarav</td><td>CHECK 10–12 Oct</td><td>No overlap found</td></tr><tr><td>2</td><td>T2 Meera</td><td>CHECK 10–12 Oct</td><td>No overlap: T1 has checked but not written yet</td></tr><tr><td>3</td><td>T1</td><td>INSERT B101</td><td>Pending, not visible to T2</td></tr><tr><td>4</td><td>T2</td><td>INSERT B102</td><td>Nothing stops it: no lock, no recheck</td></tr><tr><td>5</td><td>T1</td><td>COMMIT</td><td>Aarav accepted</td></tr><tr><td>6</td><td>T2</td><td>COMMIT</td><td>Meera accepted, overlapping B101</td></tr></tbody></table><div style="margin-top:22px"><div class="simulator"><div style="display:flex;justify-content:space-between;gap:20px;align-items:center;flex-wrap:wrap"><div><strong>Room 205</strong><div style="color:var(--muted);font-size:.85rem">Requested dates: 10–12 October</div></div><div id="ubadge" class="status" style="background:#e0f1e8;color:#216448">AVAILABLE</div></div><div class="controls"><button class="primary" onclick="runUnsafe()">Run unsafe schedule</button><button class="secondary" onclick="resetDemo('u')">Reset</button></div><div class="timeline"><div class="timeline-card"><h3>T1 — Aarav</h3><div id="ut1"><div class="event">Waiting for simulation…</div></div></div><div class="timeline-card"><h3>T2 — Meera</h3><div id="ut2"><div class="event">Waiting for simulation…</div></div></div></div><div class="state">Database state: <span id="udbstate">Room 205, 10–12 Oct = AVAILABLE (no overlapping booking)</span></div><div class="callout"><strong>Note:</strong> the unsafe run is a simplified illustration of one possible interleaving when no concurrency control is used. It is not a guaranteed outcome of every concurrent execution.</div></div></div></div></section>
+<section id="locking">
+<div class="container">  <div class="focus">
+    <div class="section-head">
+      <div class="eyebrow">07 — The solution</div>
+      <div>
+        <h2>Lock the room before changing it.</h2>
+        <p class="lead">When a transaction intends to book Room 205, it can lock that room’s row with <code>SELECT … FOR UPDATE</code>. Another transaction requesting a lock on the same row waits until the first one commits or rolls back. This works as a gate only because every booking transaction follows the same steps, and because the date-overlap check is run <em>after</em> the lock is obtained.</p>
+      </div>
+    </div>
+
+    <div class="lock-flow">
+      <div class="lock-card">
+        <h3>T1 — Aarav</h3>
+        <div class="mini">Lock Room 205 row</div>
+        <div class="mini">Check overlap for 10–12 Oct → none</div>
+        <div class="mini">INSERT booking</div>
+        <div class="mini">COMMIT → lock released</div>
+      </div>
+      <div class="lock-card">
+        <h3>T2 — Meera</h3>
+        <div class="mini wait">Requests same lock → WAIT</div>
+        <div class="mini">Lock granted after T1 commits</div>
+        <div class="mini">Recheck overlap → Aarav’s booking found</div>
+        <div class="mini">ROLLBACK / REJECT</div>
+      </div>
+    </div>
+  </div><div class="note-grid"><div class="acid-card"><strong>Concurrency control</strong><p>DBMS mechanisms that decide when a transaction may touch shared data, so concurrent runs stay serializable.</p></div><div class="acid-card"><strong>Row locking</strong><p>A lock marks one row as in use. Others wanting a conflicting lock on that row must wait.</p></div><div class="acid-card"><strong>SELECT … FOR UPDATE</strong><p>Reads the Room 205 row and locks it until COMMIT or ROLLBACK. T2’s same request waits, then continues.</p></div></div><div class="callout"><strong>Why wait?</strong> Waiting turns two overlapping attempts into a queue. T2 then re-checks and sees T1’s result.</div></div></section>
+<section id="sql"><div class="container"><div class="section-head"><div class="eyebrow">08 — SQL implementation</div><div><h2>From lock to commit: the SQL and the safe schedule.</h2><p class="lead">The PostgreSQL implementation, read in order, followed by the safe run.</p></div></div>  <div class="code-box" style="margin-top:22px">
+    <span class="comment">-- PostgreSQL, default READ COMMITTED isolation level</span><br>
+    <span class="accent">BEGIN;</span><br><br>
+    <span class="comment">-- 1. Lock the Room 205 row (other bookers of this room wait here)</span><br>
+    SELECT room_no FROM Room<br>
+    WHERE room_no = 205<br>
+    <span class="accent">FOR UPDATE;</span><br><br>
+    <span class="comment">-- 2. Check for overlapping reservations (runs after the lock is held)</span><br>
+    SELECT COUNT(*) FROM Booking<br>
+    WHERE room_no = 205<br>
+    &nbsp;&nbsp;AND check_in &lt; DATE '2027-10-12'&nbsp;&nbsp;<span class="comment">-- existing check-in &lt; new check-out</span><br>
+    &nbsp;&nbsp;AND check_out &gt; DATE '2027-10-10';<span class="comment">-- existing check-out &gt; new check-in</span><br><br>
+    <span class="comment">-- 3a. Application logic: if the count is greater than 0 → ROLLBACK; reject the booking.</span><br>
+    <span class="comment">-- 3b. If the count is 0:</span><br>
+    INSERT INTO Booking (customer, room_no, check_in, check_out)<br>
+    VALUES ('Aarav', 205, DATE '2027-10-10', DATE '2027-10-12');<br><br>
+    <span class="accent">COMMIT;</span>
+  </div>
+  <p style="color:var(--muted);margin-top:16px">The room itself is never marked “Booked”: availability is derived from the Booking table for the requested dates. <code>FOR UPDATE</code> locks the selected existing row, here the Room row, so it acts as a gate for that room. It does not lock “dates” in general, and locking the room row alone does not stop overlaps if some code path skips the lock. In PostgreSQL’s default READ COMMITTED level, each statement sees data committed before it starts, so T2’s overlap check, run after its wait, sees T1’s committed booking and rejects the request. Other isolation levels (or other DBMSs) have different locking and visibility rules.</p><table style="margin-top:18px"><thead><tr><th>Line</th><th>What it does</th><th>Why it matters</th></tr></thead><tbody><tr><td><code>BEGIN;</code></td><td>Starts the transaction</td><td>Groups lock, check and insert into one unit</td></tr><tr><td><code>SELECT … FOR UPDATE</code></td><td>Locks the Room 205 row</td><td>T2 waits here until T1 commits or rolls back</td></tr><tr><td><code>SELECT COUNT(*) … overlap</code></td><td>Counts overlapping bookings</td><td>Runs after the lock, so it sees every committed booking</td></tr><tr><td>count &gt; 0 → <code>ROLLBACK</code></td><td>Rejects the request</td><td>Where Meera ends up</td></tr><tr><td><code>INSERT …</code> (count = 0)</td><td>Creates the booking</td><td>Reached only when no overlap exists</td></tr><tr><td><code>COMMIT;</code></td><td>Saves the booking, releases the lock</td><td>Lets T2 continue</td></tr></tbody></table><div class="callout"><strong>Why Meera is rejected:</strong> T2 waits at <code>FOR UPDATE</code>; T1 inserts B101 and commits; T2’s lock is granted and its overlap count now includes B101, so it rolls back.</div><div style="margin-top:22px"><div class="simulator"><div style="display:flex;justify-content:space-between;gap:20px;align-items:center;flex-wrap:wrap"><div><strong>Room 205</strong><div style="color:var(--muted);font-size:.85rem">Requested dates: 10–12 October</div></div><div id="sbadge" class="status" style="background:#e0f1e8;color:#216448">AVAILABLE</div></div><div class="controls"><button class="primary" onclick="runSafe()">Run with locking</button><button class="secondary" onclick="resetDemo('s')">Reset</button></div><div class="timeline"><div class="timeline-card"><h3>T1 — Aarav</h3><div id="st1"><div class="event">Waiting for simulation…</div></div></div><div class="timeline-card"><h3>T2 — Meera</h3><div id="st2"><div class="event">Waiting for simulation…</div></div></div></div><div class="state">Database state: <span id="sdbstate">Room 205, 10–12 Oct = AVAILABLE (no overlapping booking)</span></div><div class="callout"><strong>Note:</strong> this shows PostgreSQL behaviour at the default READ COMMITTED level. Other DBMSs or isolation levels may lock and show data differently.</div></div></div></div></section>
+<section>
+<div class="container">  <div class="section-head">
+    <div class="eyebrow">09 — Final state</div>
+    <div>
+      <h2>One customer wins. The database stays consistent.</h2>
+    </div>
+  </div>
+  <div class="tables">
+    <div class="table-card">
+      <div class="table-title">Room Table (unchanged)</div>
+      <table class="mini-table"><thead><tr><th>Room No.</th><th>Type</th></tr></thead><tbody><tr><td>205</td><td>Deluxe</td></tr></tbody></table>
+    </div>
+    <div class="table-card">
+      <div class="table-title">Booking Table</div>
+      <table class="mini-table"><thead><tr><th>ID</th><th>Customer</th><th>Room</th><th>Dates</th></tr></thead><tbody><tr><td>B100</td><td>Rahul</td><td>205</td><td>5–8 Oct</td></tr><tr><td>B101</td><td>Aarav</td><td>205</td><td>10–12 Oct</td></tr></tbody></table>
+    </div>
+  </div>
+  <div class="booking-duel" style="margin-top:20px">
+    <div class="person" style="border-color:#b9dccb;background:var(--green-soft)"><strong>✓ Aarav</strong><small>Booking Successful</small></div>
+    <div class="person" style="border-color:#e6bdb8;background:var(--red-soft)"><strong>✕ Meera</strong><small>Booking Failed — dates no longer available</small></div>
+  </div>
+  <p class="lead" style="margin-top:18px">B100 (5–8 Oct) shows that one room can hold several reservations when the date ranges do not overlap. A second line of defence can be a database-level safeguard. An ordinary UNIQUE constraint on room number alone would not work: it would allow only one booking per room ever, even for different dates. Preventing overlapping date ranges needs a range-aware constraint (for example, a PostgreSQL exclusion constraint using <code>btree_gist</code> with <code>daterange</code>), or locking and stronger isolation levels. The right mechanism depends on the database system and schema.</p><h3 style="margin:28px 0 0">Layers of protection</h3><table style="margin-top:14px"><thead><tr><th>Safeguard</th><th>What it does</th><th>Limit</th></tr></thead><tbody><tr><td>Row lock (<code>FOR UPDATE</code>)</td><td>Queues booking attempts for one room</td><td>Works only if every code path uses it</td></tr><tr><td>Range-aware constraint (PostgreSQL: exclusion constraint)</td><td>Makes the database refuse overlapping dates for a room</td><td>Syntax and support vary by DBMS</td></tr><tr><td>Stronger isolation level</td><td>Lets the DBMS enforce serializable behaviour</td><td>May abort transactions that must be retried</td></tr></tbody></table></div>
+</section>
+<section id="takeaway">
+<div class="container">
+  <div class="takeaway">
+    <div class="eyebrow">Takeaway</div>
+    <h2>One room. Two requests. The database quietly decides the correct order.</h2>
+    <p>Hotel booking looks simple from the user's screen, but behind that screen the DBMS must coordinate concurrent transactions. Transactions provide an all-or-nothing unit of work; ACID provides reliability; and concurrency control such as locking ensures that concurrent schedules behave like safe serial execution.</p>
+    <div class="final-line">LOCK → CHECK → WRITE → COMMIT → RELEASE</div>
+  </div>
+</div>
+</section>
+</main>
+
+<footer>
+<div class="container">
+  <strong>DBMS BLOG PROJECT</strong><br>
+  One Room, Two Customers, One Correct Booking • Transaction Management
+</div>
+</footer>
+<script>
+function setEvents(p,t1,t2,state,badgeText,badgeClass){
+  document.getElementById(p+'t1').innerHTML=t1;
+  document.getElementById(p+'t2').innerHTML=t2;
+  document.getElementById(p+'dbstate').textContent=state;
+  const b=document.getElementById(p+'badge');
+  b.textContent=badgeText;
+  b.style.background=badgeClass==='bad'?'#f7e1df':'#e0f1e8';
+  b.style.color=badgeClass==='bad'?'#8e3030':'#216448';
+}
+function ev(text,cls=''){return '<div class="event '+cls+'">'+text+'</div>'}
+function runUnsafe(){
+  // Simplified illustration: one possible interleaving with no locking.
+  setEvents('u',
+    ev('1. CHECK 10–12 Oct → no overlap')+
+    ev('3. INSERT booking B101')+
+    ev('5. COMMIT → accepted','success'),
+    ev('2. CHECK 10–12 Oct → no overlap (T1 has not written yet)')+
+    ev('4. INSERT booking B102')+
+    ev('6. COMMIT → accepted, but overlaps Aarav\'s booking!','warn'),
+    'Booking table: B101 Aarav 10–12 Oct + B102 Meera 10–12 Oct → overlapping reservations (invalid state)',
+    'DOUBLE BOOKED',
+    'bad'
+  );
+}
+function runSafe(){
+  setEvents('s',
+    ev('1. LOCK Room 205 row (FOR UPDATE) → granted')+
+    ev('3. CHECK 10–12 Oct → no overlap')+
+    ev('4. INSERT booking B101')+
+    ev('5. COMMIT → lock released','success'),
+    ev('2. REQUEST same lock → WAIT','warn')+
+    ev('6. Lock granted after T1 commits')+
+    ev('7. RECHECK 10–12 Oct → overlap with Aarav\'s booking')+
+    ev('8. ROLLBACK → booking rejected','fail'),
+    'Booking table: B101 Aarav 10–12 Oct only. Meera\'s request rejected. Room 205 is booked for 10–12 Oct.',
+    'BOOKED (10–12 OCT)',
+    'good'
+  );
+}
+function resetDemo(p){
+  setEvents(p,ev('Waiting for simulation…'),ev('Waiting for simulation…'),'Room 205, 10–12 Oct = AVAILABLE (no overlapping booking)','AVAILABLE','good');
+}
+
+function checkOverlap(){
+  const g=i=>Number(document.getElementById(i).value),ei=g('c-ei'),eo=g('c-eo'),ni=g('c-ni'),no=g('c-no'),out=document.getElementById('c-out');
+  if(![ei,eo,ni,no].every(Number.isFinite)||eo<=ei||no<=ni){out.innerHTML=ev('Enter valid dates: each check-out must be after its check-in.','warn');return}
+  const a=ei<no,b=eo>ni;
+  out.innerHTML=ev('Test 1: existing.check_in &lt; new.check_out → '+ei+' &lt; '+no+' → '+a)+ev('Test 2: existing.check_out &gt; new.check_in → '+eo+' &gt; '+ni+' → '+b)+(a&&b?ev('Both true → OVERLAP → reject the booking','fail'):ev('At least one false → no overlap → booking can proceed','success'));
+}
+function loadCase(ei,eo,ni,no){
+  document.getElementById('c-ei').value=ei;document.getElementById('c-eo').value=eo;document.getElementById('c-ni').value=ni;document.getElementById('c-no').value=no;checkOverlap();
+}
+</script>
+</body>
+</html>
