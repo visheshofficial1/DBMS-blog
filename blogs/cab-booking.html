@@ -1,0 +1,654 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Management | Cab Booking</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #263449;
+            line-height: 1.7;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(120deg, #12233f, #2463eb);
+            color: white;
+            padding: 65px 20px;
+        }
+
+        .hero {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .tag {
+            color: #ffd166;
+            letter-spacing: 2px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        header h1 {
+            font-size: clamp(30px, 5vw, 48px);
+            line-height: 1.2;
+            margin: 15px 0;
+        }
+
+        header p {
+            max-width: 700px;
+            color: #e0eaff;
+            font-size: 18px;
+        }
+
+        .badge {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 7px 14px;
+            border: 1px solid #91b7ff;
+            border-radius: 25px;
+        }
+
+        /* Navigation */
+        nav {
+            background: white;
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 8px #00000010;
+        }
+
+        .nav-links {
+            max-width: 1000px;
+            margin: auto;
+            display: flex;
+            gap: 22px;
+            overflow-x: auto;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #263449;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        nav a:hover {
+            color: #2463eb;
+        }
+
+        /* Main content */
+        main {
+            max-width: 1000px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 5px 20px #0f172a08;
+            scroll-margin-top: 85px;
+        }
+
+        .number {
+            color: #2463eb;
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        h2 {
+            color: #12233f;
+            font-size: 27px;
+            margin: 5px 0 18px;
+        }
+
+        h3 {
+            color: #12233f;
+            margin: 20px 0 10px;
+        }
+
+        p {
+            margin-bottom: 12px;
+        }
+
+        ul {
+            padding-left: 24px;
+            margin: 15px 0;
+        }
+
+        /* Callout */
+        .callout {
+            background: #fff7e6;
+            border-left: 5px solid #f59e0b;
+            padding: 18px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        /* Database table */
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            min-width: 450px;
+        }
+
+        th, td {
+            padding: 14px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+        }
+
+        th {
+            background: #eaf1ff;
+            color: #12233f;
+        }
+
+        /* Status tags */
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        .chip {
+            background: #eaf1ff;
+            color: #17468b;
+            border-radius: 7px;
+            padding: 6px 12px;
+        }
+
+        /* Transaction diagrams */
+        .diagram {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            padding: 22px 15px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .node {
+            background: white;
+            border: 1px solid #cbd5e1;
+            padding: 12px;
+            border-radius: 9px;
+            margin: auto;
+            max-width: 350px;
+            font-weight: bold;
+        }
+
+        .start {
+            background: #eaf1ff;
+            border-color: #93b4ff;
+        }
+
+        .success {
+            background: #e8f8ef;
+            border-color: #82d4a0;
+        }
+
+        .warning {
+            background: #fff4df;
+            border-color: #f6c76a;
+        }
+
+        .arrow {
+            font-size: 24px;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        .two-columns {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .lane, .card {
+            background: #fbfdff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        /* SQL */
+        pre {
+            background: #101b2d;
+            color: #e5edf9;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+
+        code {
+            font-family: Consolas, monospace;
+        }
+
+        .acid-card {
+            text-align: left;
+        }
+
+        .acid-card h3 {
+            margin-top: 0;
+        }
+
+        footer {
+            background: #12233f;
+            color: white;
+            text-align: center;
+            padding: 25px;
+        }
+
+        @media (max-width: 650px) {
+            header {
+                padding: 45px 20px;
+            }
+
+            section {
+                padding: 22px 18px;
+            }
+
+            .two-columns {
+                grid-template-columns: 1fr;
+            }
+
+            h2 {
+                font-size: 23px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="hero">
+        <div class="tag">DBMS PROJECT · BLOG</div>
+
+        <h1>Transaction Management in a Cab Booking System</h1>
+
+        <p>
+            Discover how database transactions prevent duplicate
+            driver assignments and maintain consistency when many
+            passengers book rides simultaneously.
+        </p>
+
+        <div class="badge">
+            Concurrency · COMMIT · ROLLBACK · ACID
+        </div>
+    </div>
+</header>
+
+<nav>
+    <div class="nav-links">
+        <a href="#introduction">Introduction</a>
+        <a href="#database">Database</a>
+        <a href="#problem">Problem</a>
+        <a href="#solution">Solution</a>
+        <a href="#sql">SQL Example</a>
+        <a href="#acid">ACID</a>
+        <a href="#conclusion">Conclusion</a>
+    </div>
+</nav>
+
+<main>
+
+    <!-- 1. Introduction -->
+    <section id="introduction">
+        <div class="number">01 · INTRODUCTION</div>
+        <h2>Why Transaction Management Matters</h2>
+
+        <p>
+            Imagine a busy evening when many people are leaving
+            their colleges and offices at the same time. Hundreds
+            of users open a cab-booking application and request rides.
+        </p>
+
+        <p>
+            Suppose only one driver, <b>Driver D101</b>, is available
+            nearby. Two users, Pooja and Riya, request a cab almost
+            at the same time.
+        </p>
+
+        <p>
+            If the system does not properly manage these requests,
+            both users might receive the same driver. Two rides
+            would be confirmed even though only one driver is available.
+        </p>
+
+        <div class="callout">
+            <b>Key concept:</b> Transaction management ensures that
+            concurrent ride requests are processed safely and that
+            the database remains consistent.
+        </div>
+    </section>
+
+    <!-- 2. Database structure -->
+    <section id="database">
+        <div class="number">02 · DATABASE STRUCTURE</div>
+        <h2>Basic Structure of a Cab Booking System</h2>
+
+        <p>A simple cab-booking database contains these tables:</p>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Table</th>
+                        <th>Important Information</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td><b>USER</b></td>
+                        <td>User_ID, Name, Phone</td>
+                    </tr>
+                    <tr>
+                        <td><b>DRIVER</b></td>
+                        <td>Driver_ID, Name, Status, Location</td>
+                    </tr>
+                    <tr>
+                        <td><b>CAB</b></td>
+                        <td>Cab_ID, Driver_ID, Cab_Type</td>
+                    </tr>
+                    <tr>
+                        <td><b>RIDE</b></td>
+                        <td>Ride_ID, User_ID, Driver_ID, Pickup, Destination, Status</td>
+                    </tr>
+                    <tr>
+                        <td><b>PAYMENT</b></td>
+                        <td>Payment_ID, Ride_ID, Amount, Payment_Status</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="two-columns">
+            <div class="card">
+                <h3>Driver Status</h3>
+                <div class="chips">
+                    <span class="chip">Available</span>
+                    <span class="chip">Assigned</span>
+                    <span class="chip">On Ride</span>
+                    <span class="chip">Offline</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Ride Status</h3>
+                <div class="chips">
+                    <span class="chip">Requested</span>
+                    <span class="chip">Confirmed</span>
+                    <span class="chip">Ongoing</span>
+                    <span class="chip">Completed</span>
+                    <span class="chip">Cancelled</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Problem -->
+    <section id="problem">
+        <div class="number">03 · CONCURRENCY PROBLEM</div>
+        <h2>When Two Users Request the Same Driver</h2>
+
+        <ul>
+            <li>Driver D101 is available.</li>
+            <li>Pooja requests a ride.</li>
+            <li>Riya requests a ride at almost the same time.</li>
+            <li>Both requests identify D101 as available.</li>
+        </ul>
+
+        <div class="diagram">
+            <div class="node start">
+                Driver D101 — Available
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="two-columns">
+                <div class="lane">
+                    <b>Pooja's Request (T1)</b>
+                    <div class="arrow">↓</div>
+                    <div class="node">Reads Available</div>
+                    <div class="arrow">↓</div>
+                    <div class="node warning">Assigns D101</div>
+                </div>
+
+                <div class="lane">
+                    <b>Riya's Request (T2)</b>
+                    <div class="arrow">↓</div>
+                    <div class="node">Reads Available</div>
+                    <div class="arrow">↓</div>
+                    <div class="node warning">Assigns D101</div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="node warning">
+                CONFLICT: One driver, two ride assignments!
+            </div>
+        </div>
+
+        <p>
+            This is called a <b>concurrency problem</b>. Both
+            transactions may read the same old status before either
+            transaction updates the driver record.
+        </p>
+    </section>
+
+    <!-- 4. Solution -->
+    <section id="solution">
+        <div class="number">04 · TRANSACTION SOLUTION</div>
+        <h2>How Transaction Management Solves the Problem</h2>
+
+        <p>
+            A transaction treats a group of database operations
+            as one logical unit. If an operation fails, the system
+            can roll back the incomplete changes.
+        </p>
+
+        <div class="diagram">
+            <div class="node start">BEGIN TRANSACTION</div>
+            <div class="arrow">↓</div>
+            <div class="node">Find an Available Driver</div>
+            <div class="arrow">↓</div>
+            <div class="node">Reserve the Driver Safely</div>
+            <div class="arrow">↓</div>
+            <div class="node">Create the Ride Record</div>
+            <div class="arrow">↓</div>
+            <div class="node">Update Driver Status</div>
+            <div class="arrow">↓</div>
+            <div class="node success">COMMIT — Save Changes</div>
+        </div>
+
+        <h3>Example: Pooja's Transaction</h3>
+
+        <div class="diagram">
+            <div class="node start">T1: Pooja Requests a Ride</div>
+            <div class="arrow">↓</div>
+            <div class="node">Reserve Driver D101</div>
+            <div class="arrow">↓</div>
+            <div class="node">Create Ride R501</div>
+            <div class="arrow">↓</div>
+            <div class="node">Set D101 = Assigned</div>
+            <div class="arrow">↓</div>
+            <div class="node success">COMMIT</div>
+        </div>
+
+        <p>
+            When Riya's transaction tries to reserve D101, the
+            conditional update will fail because the driver is
+            no longer available. The system can search for another
+            driver or inform Riya that no suitable driver is available.
+        </p>
+
+        <div class="callout">
+            <b>ROLLBACK:</b> If ride creation fails after reserving
+            the driver, the system should undo the reservation so
+            the driver does not remain incorrectly marked as assigned.
+        </div>
+    </section>
+
+    <!-- 5. SQL -->
+    <section id="sql">
+        <div class="number">05 · SQL IMPLEMENTATION</div>
+        <h2>Transaction SQL Example</h2>
+
+        <p>
+            The condition
+            <code>WHERE Driver_ID = 'D101' AND Status = 'Available'</code>
+            allows the update only when the driver is still available.
+        </p>
+
+        <h3>Transaction T1 — Pooja</h3>
+
+<pre><code>START TRANSACTION;
+
+UPDATE DRIVER
+SET Status = 'Assigned'
+WHERE Driver_ID = 'D101'
+  AND Status = 'Available';
+
+-- Application must check affected rows.
+-- Continue only if exactly one row was updated.
+
+INSERT INTO RIDE
+    (Ride_ID, User_ID, Driver_ID, Status)
+VALUES
+    ('R501', 'U101', 'D101', 'Confirmed');
+
+COMMIT;</code></pre>
+
+        <h3>Transaction T2 — Riya</h3>
+
+<pre><code>START TRANSACTION;
+
+UPDATE DRIVER
+SET Status = 'Assigned'
+WHERE Driver_ID = 'D101'
+  AND Status = 'Available';
+
+-- If zero rows are affected:
+-- ROLLBACK and search for another driver.
+
+INSERT INTO RIDE
+    (Ride_ID, User_ID, Driver_ID, Status)
+VALUES
+    ('R502', 'U102', 'D101', 'Confirmed');
+
+COMMIT;</code></pre>
+
+        <div class="callout">
+            <b>Important:</b> These are illustrative SQL examples.
+            A real application must check the number of rows updated
+            before inserting the ride. If zero rows were updated,
+            it must not confirm a ride using that driver. The
+            application should roll back and try another driver.
+            Proper database isolation, locking, and constraints
+            add further protection.
+        </div>
+    </section>
+
+    <!-- 6. ACID -->
+    <section id="acid">
+        <div class="number">06 · ACID PROPERTIES</div>
+        <h2>ACID Properties in a Cab Booking System</h2>
+
+        <div class="two-columns">
+            <div class="card acid-card">
+                <h3>1. Atomicity</h3>
+                <p>
+                    Either the driver assignment and ride creation
+                    succeed together, or incomplete changes are rolled back.
+                </p>
+            </div>
+
+            <div class="card acid-card">
+                <h3>2. Consistency</h3>
+                <p>
+                    Database rules remain valid. A driver should not
+                    be assigned to two active rides.
+                </p>
+            </div>
+
+            <div class="card acid-card">
+                <h3>3. Isolation</h3>
+                <p>
+                    Concurrent requests are controlled so that
+                    they do not incorrectly interfere with one another.
+                </p>
+            </div>
+
+            <div class="card acid-card">
+                <h3>4. Durability</h3>
+                <p>
+                    After a successful commit, the saved ride remains
+                    recorded even if the application restarts.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. Conclusion -->
+    <section id="conclusion">
+        <div class="number">07 · CONCLUSION</div>
+        <h2>Conclusion</h2>
+
+        <p>
+            Transaction management is essential in a cab-booking
+            system because many users may request rides at the same time.
+        </p>
+
+        <p>
+            Using transactions, conditional updates, appropriate
+            locking, and rollback handling helps prevent duplicate
+            driver assignments and keeps the database reliable.
+        </p>
+
+        <div class="callout">
+            <b>Remember:</b> A ride should be confirmed only after
+            the driver has been successfully reserved.
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    <p>DBMS Project | Transaction Management in a Cab Booking System</p>
+</footer>
+
+</body>
+</html>
