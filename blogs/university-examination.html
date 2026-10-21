@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Management | University Examination System</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f9f5;
+            color: #263449;
+            line-height: 1.7;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(120deg, #0b3d2e, #16a34a);
+            color: white;
+            padding: 65px 20px;
+        }
+
+        .hero {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .tag {
+            color: #ffd166;
+            letter-spacing: 2px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        header h1 {
+            font-size: clamp(30px, 5vw, 48px);
+            line-height: 1.2;
+            margin: 15px 0;
+        }
+
+        header p {
+            max-width: 700px;
+            color: #dcfce7;
+            font-size: 18px;
+        }
+
+        .badge {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 7px 14px;
+            border: 1px solid #86efac;
+            border-radius: 25px;
+        }
+
+        /* Navigation */
+        nav {
+            background: white;
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 8px #00000010;
+        }
+
+        .nav-links {
+            max-width: 1000px;
+            margin: auto;
+            display: flex;
+            gap: 22px;
+            overflow-x: auto;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #263449;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        nav a:hover {
+            color: #16a34a;
+        }
+
+        /* Main content */
+        main {
+            max-width: 1000px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 5px 20px #0f172a08;
+            scroll-margin-top: 85px;
+        }
+
+        .number {
+            color: #16a34a;
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        h2 {
+            color: #0b3d2e;
+            font-size: 27px;
+            margin: 5px 0 18px;
+        }
+
+        h3 {
+            color: #0b3d2e;
+            margin: 20px 0 10px;
+        }
+
+        p {
+            margin-bottom: 12px;
+        }
+
+        ul {
+            padding-left: 24px;
+            margin: 15px 0;
+        }
+
+        /* Callout */
+        .callout {
+            background: #fff7e6;
+            border-left: 5px solid #f59e0b;
+            padding: 18px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        /* Table */
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            min-width: 450px;
+        }
+
+        th, td {
+            padding: 14px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+        }
+
+        th {
+            background: #e3f6ea;
+            color: #0b3d2e;
+        }
+
+        /* Chips */
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        .chip {
+            background: #e3f6ea;
+            color: #14532d;
+            border-radius: 7px;
+            padding: 6px 12px;
+        }
+
+        /* Diagrams */
+        .diagram {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            padding: 22px 15px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .node {
+            background: white;
+            border: 1px solid #cbd5e1;
+            padding: 12px;
+            border-radius: 9px;
+            margin: auto;
+            max-width: 350px;
+            font-weight: bold;
+        }
+
+        .start {
+            background: #e3f6ea;
+            border-color: #6fcf97;
+        }
+
+        .success {
+            background: #d1fae5;
+            border-color: #34d399;
+        }
+
+        .warning {
+            background: #fff4df;
+            border-color: #f6c76a;
+        }
+
+        .arrow {
+            font-size: 24px;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        .two-columns {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .lane, .card {
+            background: #fbfdff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        /* SQL */
+        pre {
+            background: #0a2a1f;
+            color: #e4f5ea;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+
+        code {
+            font-family: Consolas, monospace;
+        }
+
+        .acid-card {
+            text-align: left;
+        }
+
+        .acid-card h3 {
+            margin-top: 0;
+        }
+
+        footer {
+            background: #0b3d2e;
+            color: white;
+            text-align: center;
+            padding: 25px;
+        }
+
+        @media (max-width: 650px) {
+            header {
+                padding: 45px 20px;
+            }
+
+            section {
+                padding: 22px 18px;
+            }
+
+            .two-columns {
+                grid-template-columns: 1fr;
+            }
+
+            h2 {
+                font-size: 23px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="hero">
+        <div class="tag">DBMS PROJECT · BLOG</div>
+
+        <h1>Transaction Management in a University Examination System</h1>
+
+        <p>
+            Discover how transactions, locks and ACID properties
+            prevent lost updates and keep every student's result
+            accurate when many people work on the same marks.
+        </p>
+
+        <div class="badge">
+            Concurrency · Locks · COMMIT · ROLLBACK · ACID
+        </div>
+    </div>
+</header>
+
+<nav>
+    <div class="nav-links">
+        <a href="#introduction">Introduction</a>
+        <a href="#problem">Lost Update</a>
+        <a href="#transaction">Transaction</a>
+        <a href="#locks">Locks</a>
+        <a href="#acid">ACID</a>
+        <a href="#commit">Commit &amp; Rollback</a>
+        <a href="#conclusion">Conclusion</a>
+    </div>
+</nav>
+
+<main>
+
+    <!-- 1. Introduction -->
+    <section id="introduction">
+        <div class="number">01 · INTRODUCTION</div>
+        <h2>Why Transaction Management Matters</h2>
+
+        <p>
+            A university database is used by examiners, students and
+            revaluation staff. When two people update the same marks
+            at the same time, one update may be lost.
+        </p>
+
+        <p>
+            Transaction management and concurrency control help
+            keep results accurate even when many users access the
+            database together.
+        </p>
+
+        <div class="callout">
+            <b>Key concept:</b> Transaction management ensures that
+            concurrent updates to marks are processed safely and that
+            the database remains consistent.
+        </div>
+    </section>
+
+    <!-- 2. Lost update -->
+    <section id="problem">
+        <div class="number">02 · CONCURRENCY PROBLEM</div>
+        <h2>Example: The Lost Update Problem</h2>
+
+        <p>Suppose Roll No. 1 has <b>62 marks</b> in DBMS.</p>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Transaction</th>
+                        <th>Who</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><b>T1</b></td>
+                        <td>Examiner</td>
+                        <td>Changes 62 to 68</td>
+                    </tr>
+                    <tr>
+                        <td><b>T2</b></td>
+                        <td>Revaluation officer</td>
+                        <td>Adds 3 marks</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="diagram">
+            <div class="node start">Roll No. 1 — DBMS Marks = 62</div>
+
+            <div class="arrow">↓</div>
+
+            <div class="two-columns">
+                <div class="lane">
+                    <b>T1 — Examiner</b>
+                    <div class="arrow">↓</div>
+                    <div class="node">Reads 62</div>
+                    <div class="arrow">↓</div>
+                    <div class="node warning">Saves 68</div>
+                </div>
+
+                <div class="lane">
+                    <b>T2 — Revaluation</b>
+                    <div class="arrow">↓</div>
+                    <div class="node">Reads 62</div>
+                    <div class="arrow">↓</div>
+                    <div class="node warning">Saves 65</div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <div class="node warning">
+                LOST UPDATE: The examiner's correction disappears!
+            </div>
+        </div>
+
+        <p>
+            If both read 62 at the same time, T1 saves 68 and T2 may
+            save 65. The examiner's correction is lost. The correct
+            result is <b>71</b> if the operations happen in order:
+        </p>
+
+        <div class="chips">
+            <span class="chip">62</span>
+            <span class="chip">→ 68</span>
+            <span class="chip">→ 71</span>
+        </div>
+    </section>
+
+    <!-- 3. Transaction -->
+    <section id="transaction">
+        <div class="number">03 · TRANSACTION</div>
+        <h2>What Is a Transaction?</h2>
+
+        <p>
+            A transaction is a group of database operations treated
+            as one unit. In an exam system, it can read marks, update
+            marks, recalculate the total and grade, and then commit
+            the changes.
+        </p>
+
+        <div class="diagram">
+            <div class="node start">BEGIN TRANSACTION</div>
+            <div class="arrow">↓</div>
+            <div class="node">Read Marks</div>
+            <div class="arrow">↓</div>
+            <div class="node">Update Marks</div>
+            <div class="arrow">↓</div>
+            <div class="node">Recalculate Total and Grade</div>
+            <div class="arrow">↓</div>
+            <div class="node success">COMMIT — Save Changes</div>
+        </div>
+    </section>
+
+    <!-- 4. Locks -->
+    <section id="locks">
+        <div class="number">04 · CONCURRENCY CONTROL</div>
+        <h2>Concurrency Control and Locks</h2>
+
+        <p>
+            A <b>serial schedule</b> completes one transaction before
+            starting the next. A <b>concurrent schedule</b> lets
+            transactions overlap, improving efficiency, but the DBMS
+            must control access to avoid errors.
+        </p>
+
+        <div class="two-columns">
+            <div class="card acid-card">
+                <h3>Shared Lock</h3>
+                <p>
+                    Allows multiple users to read data, such as
+                    students viewing results.
+                </p>
+            </div>
+
+            <div class="card acid-card">
+                <h3>Exclusive Lock</h3>
+                <p>
+                    Allows one transaction to update data, such as an
+                    examiner changing marks.
+                </p>
+            </div>
+        </div>
+
+        <h3>Example: Locking Fixes the Lost Update</h3>
+
+        <div class="diagram">
+            <div class="node start">Marks = 62</div>
+            <div class="arrow">↓</div>
+            <div class="node">T1 locks the record, updates 62 → 68</div>
+            <div class="arrow">↓</div>
+            <div class="node success">T1 COMMITS and releases the lock</div>
+            <div class="arrow">↓</div>
+            <div class="node">T2 reads 68 and adds 3</div>
+            <div class="arrow">↓</div>
+            <div class="node success">T2 saves 71 — Neither update is lost</div>
+        </div>
+
+<pre><code>START TRANSACTION;
+
+SELECT Marks FROM RESULT
+WHERE Roll_No = 1 AND Subject = 'DBMS'
+FOR UPDATE;   -- exclusive lock
+
+UPDATE RESULT
+SET Marks = Marks + 3
+WHERE Roll_No = 1 AND Subject = 'DBMS';
+
+COMMIT;</code></pre>
+
+        <div class="callout">
+            <b>Note:</b> This is an illustrative SQL example. Exact
+            locking syntax and behaviour vary between database systems.
+        </div>
+    </section>
+
+    <!-- 5. ACID -->
+    <section id="acid">
+        <div class="number">05 · ACID PROPERTIES</div>
+        <h2>ACID Properties in an Examination System</h2>
+
+        <div class="two-columns">
+            <div class="card acid-card">
+                <h3>1. Atomicity</h3>
+                <p>All operations happen, or none happen.</p>
+            </div>
+
+            <div class="card acid-card">
+                <h3>2. Consistency</h3>
+                <p>Marks, totals and grades remain valid.</p>
+            </div>
+
+            <div class="card acid-card">
+                <h3>3. Isolation</h3>
+                <p>Transactions do not interfere incorrectly.</p>
+            </div>
+
+            <div class="card acid-card">
+                <h3>4. Durability</h3>
+                <p>
+                    Committed changes remain saved, even after a crash.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Commit, rollback, serializability -->
+    <section id="commit">
+        <div class="number">06 · COMMIT, ROLLBACK AND SERIALIZABILITY</div>
+        <h2>Saving, Undoing and Staying Correct</h2>
+
+        <div class="two-columns">
+            <div class="card acid-card">
+                <h3>COMMIT</h3>
+                <p>Saves changes permanently.</p>
+            </div>
+
+            <div class="card acid-card">
+                <h3>ROLLBACK</h3>
+                <p>Cancels incomplete changes.</p>
+            </div>
+        </div>
+
+        <div class="callout">
+            <b>ROLLBACK example:</b> If a grace-marks update fails
+            halfway, rollback prevents only some students from
+            receiving the update.
+        </div>
+
+        <h3>Serializability</h3>
+        <p>
+            Serializability means concurrent transactions produce the
+            same correct result as a safe serial order.
+        </p>
+    </section>
+
+    <!-- 7. Conclusion -->
+    <section id="conclusion">
+        <div class="number">07 · USES AND CONCLUSION</div>
+        <h2>Conclusion</h2>
+
+        <p>These concepts help with:</p>
+
+        <div class="chips">
+            <span class="chip">Marks Entry</span>
+            <span class="chip">Revaluation</span>
+            <span class="chip">Hall-Ticket Generation</span>
+            <span class="chip">Exam Registration</span>
+            <span class="chip">Fee Payments</span>
+            <span class="chip">Result Publication</span>
+        </div>
+
+        <p>
+            In conclusion, transaction management, ACID properties
+            and locks help a university database handle many users
+            while keeping every student's result correct.
+        </p>
+
+        <div class="callout">
+            <b>Remember:</b> Concurrent updates must never overwrite
+            one another. Lock, update, commit, and only then let the
+            next transaction proceed.
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    <p>DBMS Project | Transaction Management in a University Examination System</p>
+</footer>
+
+</body>
+</html>
